@@ -4,6 +4,32 @@ from datetime import datetime
 import re
 import io
 
+
+
+# 🔒 Mot de passe défini par toi
+PASSWORD = "Celine01$"
+
+def check_password():
+    """Affiche une zone de saisie pour le mot de passe et bloque l’accès si incorrect."""
+    if "authenticated" not in st.session_state:
+        st.session_state.authenticated = False
+
+    if not st.session_state.authenticated:
+        with st.form("Login"):
+            pwd = st.text_input("🔐 Entrez le mot de passe", type="password")
+            submitted = st.form_submit_button("Se connecter")
+            if submitted and pwd == PASSWORD:
+                st.session_state.authenticated = True
+            elif submitted:
+                st.error("Mot de passe incorrect")
+
+    return st.session_state.authenticated
+
+# Blocage tant que mot de passe non bon
+if not check_password():
+    st.stop()
+
+
 # === TABLE DE CORRESPONDANCE HORAIRE ===
 horaire_mapping = {
     "700-1430": (7.5, 0),
