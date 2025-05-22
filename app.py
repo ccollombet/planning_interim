@@ -10,6 +10,31 @@ from copy import copy
 import re
 from datetime import datetime
 
+
+# === CONFIGURATION ===
+
+PASSWORD = st.secrets["PLANNING_APP_PASSWORD"]
+
+
+
+# === AUTHENTIFICATION ===
+def check_password():
+    if "authenticated" not in st.session_state:
+        st.session_state.authenticated = False
+
+    if not st.session_state.authenticated:
+        with st.form("Login"):
+            pwd = st.text_input("🔐 Entrez le mot de passe", type="password")
+            submitted = st.form_submit_button("Se connecter")
+            if submitted and pwd == PASSWORD:
+                st.session_state.authenticated = True
+            elif submitted:
+                st.error("Mot de passe incorrect")
+    return st.session_state.authenticated
+
+if not check_password():
+    st.stop()
+
 st.set_page_config(page_title="Générateur de planning", layout="centered")
 st.title("🗓️ Générateur de planning MAS Montaines")
 
