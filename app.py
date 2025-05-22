@@ -36,7 +36,7 @@ def check_password():
 if not check_password():
     st.stop()
 
-st.set_page_config(page_title="Générateur de planning", layout="centered")
+#st.set_page_config(page_title="Générateur de planning", layout="centered")
 st.title("🗓️ Générateur de planning MAS Montaines")
 
 # === Fonctions utilitaires génériques ===
