@@ -10,7 +10,8 @@ from copy import copy
 import re
 from datetime import datetime
 
-
+# ✅ CECI DOIT ÊTRE LA PREMIÈRE COMMANDE STREAMLIT
+st.set_page_config(page_title="Générateur de planning", layout="centered")
 # === CONFIGURATION ===
 
 PASSWORD = st.secrets["PLANNING_APP_PASSWORD"]
