@@ -1,0 +1,20 @@
+# Secrets et configuration
+.streamlit/secrets.toml
+
+# Fichiers générés
+*.xlsx
+*.csv
+
+# Dossiers temporaires
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+tempfile/
+tmp/
+*.log
+
+# Environnement virtuel
+.venv/
+env/
+venv/
