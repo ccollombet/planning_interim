@@ -129,7 +129,8 @@ def traitement_partie1(fichier_initial):
         if isinstance(cellule, str) and "\n" in cellule:
             j, m = cellule.strip().split("\n")
             j = j[1:] if j[0] in "LMJVSD" else j
-            return f"{int(j):02d}/{mois_map.get(m[:3], '00')}/2025"
+            #return f"{int(j):02d}/{mois_map.get(m[:3], '00')}/2025"
+            return f"{int(j):02d}/{mois_map.get(m.strip().capitalize()[:4], '00')}/2025"
         return None
 
     for row in range(1, ws.max_row - 4):
@@ -239,8 +240,12 @@ def traitement_partie2(fichier_source):
         cell.alignment = Alignment(horizontal="center")
 
     colonnes = list(range(4, 35))
-    mois_map = {"Jan": "01", "Fév": "02", "Fev": "02", "Mar": "03", "Avr": "04", "Mai": "05", "Juin": "06",
-                "Juil": "07", "Aoû": "08", "Aou": "08", "Sep": "09", "Oct": "10", "Nov": "11", "Déc": "12", "Dec": "12"}
+    #mois_map = {"Jan": "01", "Fév": "02", "Fev": "02", "Mar": "03", "Avr": "04", "Mai": "05", "Juin": "06",
+               # "Juil": "07", "Aoû": "08", "Aou": "08", "Sep": "09", "Oct": "10", "Nov": "11", "Déc": "12", "Dec": "12"}
+    mois_map = {
+    "Jan": "01", "Fév": "02", "Fev": "02", "Mar": "03", "Mars": "03", "Avr": "04", "Mai": "05",
+    "Juin": "06", "Jui": "07", "Juil": "07", "Août": "08", "Aou": "08", "Sep": "09", "Sept": "09",
+    "Oct": "10", "Nov": "11", "Déc": "12", "Dec": "12"}
 
     dates_colonnes = {}   
     for col in colonnes:
@@ -252,7 +257,8 @@ def traitement_partie2(fichier_source):
                 jour, mois = parts
                 jour = jour[1:] if jour and jour[0] in "LMJVSD" else jour
                 if jour.isdigit():
-                    dates_colonnes[col] = f"{int(jour):02d}/{mois_map.get(mois[:3], '00')}/2025"
+                    #dates_colonnes[col] = f"{int(jour):02d}/{mois_map.get(mois[:3], '00')}/2025"
+                    dates_colonnes[col] = f"{int(jour):02d}/{mois_map.get(m.strip().capitalize()[:4], '00')}/2025"
     
 
 
