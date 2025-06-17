@@ -157,45 +157,19 @@ def traitement_partie1(fichier_initial):
             #            c.font = Font(name="Segoe UI", size=8)
             #            c.fill = copy(ws.cell(r_hor + 2, col).fill)
             #            c.alignment = Alignment(horizontal="center")
-            #if not is_rempla:
-            #    nom_prenom_parts = identite.strip().split()
-            #    if len(nom_prenom_parts) >= 2:
-            #        nom = nom_prenom_parts[0].strip()
-            #        prenom = " ".join(nom_prenom_parts[1:]).strip()
-            #        ws.cell(r_hor, 1, f"{nom}\n{prenom}").alignment = Alignment(wrap_text=True)
-            #        for col in colonnes:
-            #            for r, val in zip([r_nom, r_pre], [nom, prenom]):
-            #                c = ws.cell(r, col, val)
-            #                c.font = Font(name="Segoe UI", size=8)
-            #                c.fill = copy(ws.cell(r_hor + 2, col).fill)
-            #                c.alignment = Alignment(horizontal="center")
-#
-            # Remplacez ce bloc dans traitement_partie1
-
             if not is_rempla:
-                # Si la cellule contient déjà un saut de ligne,
-                # on considère que la 1ᵉ ligne est le nom complet,
-                # et la 2ᵉ ligne le prénom.
-                if "\n" in identite:
-                    nom_line, prenom_line = identite.split("\n", 1)
-                    nom = nom_line.strip()
-                    prenom = prenom_line.strip()
-                else:
-                    # sinon on retombe sur la logique précédente
-                    nom_prenom_parts = identite.strip().split()
-                    nom    = nom_prenom_parts[0]
-                    prenom = " ".join(nom_prenom_parts[1:])
-            
-                # on réécrit la cellule sur deux lignes
-                ws.cell(r_hor, 1, f"{nom}\n{prenom}").alignment = Alignment(wrap_text=True)
-                # on remplit les cases Nom / Prénom avec le style existant
-                for col in colonnes:
-                    for r, val in zip([r_nom, r_pre], [nom, prenom]):
-                        c = ws.cell(r, col, val)
-                        c.font      = Font(name="Segoe UI", size=8)
-                        c.fill      = copy(ws.cell(r_hor + 2, col).fill)
-                        c.alignment = Alignment(horizontal="center")
-                        
+                nom_prenom_parts = identite.strip().split()
+                if len(nom_prenom_parts) >= 2:
+                    nom = nom_prenom_parts[0].strip()
+                    prenom = " ".join(nom_prenom_parts[1:]).strip()
+                    ws.cell(r_hor, 1, f"{nom}\n{prenom}").alignment = Alignment(wrap_text=True)
+                    for col in colonnes:
+                        for r, val in zip([r_nom, r_pre], [nom, prenom]):
+                            c = ws.cell(r, col, val)
+                            c.font = Font(name="Segoe UI", size=8)
+                            c.fill = copy(ws.cell(r_hor + 2, col).fill)
+                            c.alignment = Alignment(horizontal="center")
+
             elif is_rempla:
                 for col in colonnes:
                     d = convertir(ws.cell(1, col).value)
@@ -305,67 +279,27 @@ def traitement_partie2(fichier_source):
                     dates_colonnes[col] = f"{int(jour):02d}/{mois_map.get(mois.strip().capitalize()[:4], '00')}/2025"
 
     lignes_donnees = []
-    #for row in range(1, ws_source.max_row - 4):
-    #    if ws_source.cell(row=row, column=3).value == "Hor.":
-    #        ligne_hor = row
-    #        ligne_lieu = row + 1
-    #        ligne_act = row + 2
-    #        ligne_nom = row + 3
-    #        ligne_prenom = row + 4
-#
-    #        valeur_nom_colA = ws_source.cell(row=ligne_hor, column=1).value or ""
-#
-    #        for col in colonnes:
-    #            val_act = ws_source.cell(row=ligne_act, column=col).value
-    #            val_hor = ws_source.cell(row=ligne_hor, column=col).value
-    #            val_lieu = ws_source.cell(row=ligne_lieu, column=col).value
-#
-    #            if isinstance(val_act, str) and val_act.startswith("502G"):
-    #                groupe = val_act[-1] if val_act[-1].isdigit() else ""
-    #                date = dates_colonnes.get(col, "")
-    #                lignes_donnees.append([
-    #                    date, groupe, val_hor, "", "", valeur_nom_colA.replace("\n", " "), val_lieu
-    #                ])
+    for row in range(1, ws_source.max_row - 4):
+        if ws_source.cell(row=row, column=3).value == "Hor.":
+            ligne_hor = row
+            ligne_lieu = row + 1
+            ligne_act = row + 2
+            ligne_nom = row + 3
+            ligne_prenom = row + 4
 
-       # ➡️ Au lieu de faire `for row in range(1, ws_source.max_row - 4):`
-    # on va détecter **toutes** les lignes où col=3 vaut "Hor."
-    max_row = ws_source.max_row
-    lignes_hor = [
-        r for r in range(1, max_row + 1)
-        if ws_source.cell(row=r, column=3).value == "Hor."
-    ]
+            valeur_nom_colA = ws_source.cell(row=ligne_hor, column=1).value or ""
 
-    lignes_donnees = []
-    for ligne_hor in lignes_hor:
-        # on s'assure qu'on a bien la place pour lire les 4 lignes suivantes
-        if ligne_hor + 4 > max_row:
-            # si on est trop près de la fin, on saute
-            continue
+            for col in colonnes:
+                val_act = ws_source.cell(row=ligne_act, column=col).value
+                val_hor = ws_source.cell(row=ligne_hor, column=col).value
+                val_lieu = ws_source.cell(row=ligne_lieu, column=col).value
 
-        ligne_lieu   = ligne_hor + 1
-        ligne_act    = ligne_hor + 2
-        ligne_nom    = ligne_hor + 3
-        ligne_prenom = ligne_hor + 4
-
-        valeur_nom_colA = ws_source.cell(row=ligne_hor, column=1).value or ""
-
-        for col in colonnes:
-            val_act = ws_source.cell(row=ligne_act, column=col).value
-            val_hor = ws_source.cell(row=ligne_hor, column=col).value
-            val_lieu = ws_source.cell(row=ligne_lieu, column=col).value
-
-            if isinstance(val_act, str) and val_act.startswith("502G"):
-                groupe = val_act[-1] if val_act[-1].isdigit() else ""
-                date   = dates_colonnes.get(col, "")
-                lignes_donnees.append([
-                    date,
-                    groupe,
-                    val_hor,
-                    "",  # Motif
-                    "",  # NOM de la personne remplacée
-                    valeur_nom_colA.replace("\n", " "),
-                    val_lieu
-                ])
+                if isinstance(val_act, str) and val_act.startswith("502G"):
+                    groupe = val_act[-1] if val_act[-1].isdigit() else ""
+                    date = dates_colonnes.get(col, "")
+                    lignes_donnees.append([
+                        date, groupe, val_hor, "", "", valeur_nom_colA.replace("\n", " "), val_lieu
+                    ])
 
     lignes_donnees = sorted(lignes_donnees, key=lambda x: (pd.to_datetime(x[0], dayfirst=True), x[1]))
 

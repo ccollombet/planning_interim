@@ -157,45 +157,19 @@ def traitement_partie1(fichier_initial):
             #            c.font = Font(name="Segoe UI", size=8)
             #            c.fill = copy(ws.cell(r_hor + 2, col).fill)
             #            c.alignment = Alignment(horizontal="center")
-            #if not is_rempla:
-            #    nom_prenom_parts = identite.strip().split()
-            #    if len(nom_prenom_parts) >= 2:
-            #        nom = nom_prenom_parts[0].strip()
-            #        prenom = " ".join(nom_prenom_parts[1:]).strip()
-            #        ws.cell(r_hor, 1, f"{nom}\n{prenom}").alignment = Alignment(wrap_text=True)
-            #        for col in colonnes:
-            #            for r, val in zip([r_nom, r_pre], [nom, prenom]):
-            #                c = ws.cell(r, col, val)
-            #                c.font = Font(name="Segoe UI", size=8)
-            #                c.fill = copy(ws.cell(r_hor + 2, col).fill)
-            #                c.alignment = Alignment(horizontal="center")
-#
-            # Remplacez ce bloc dans traitement_partie1
-
             if not is_rempla:
-                # Si la cellule contient déjà un saut de ligne,
-                # on considère que la 1ᵉ ligne est le nom complet,
-                # et la 2ᵉ ligne le prénom.
-                if "\n" in identite:
-                    nom_line, prenom_line = identite.split("\n", 1)
-                    nom = nom_line.strip()
-                    prenom = prenom_line.strip()
-                else:
-                    # sinon on retombe sur la logique précédente
-                    nom_prenom_parts = identite.strip().split()
-                    nom    = nom_prenom_parts[0]
-                    prenom = " ".join(nom_prenom_parts[1:])
-            
-                # on réécrit la cellule sur deux lignes
-                ws.cell(r_hor, 1, f"{nom}\n{prenom}").alignment = Alignment(wrap_text=True)
-                # on remplit les cases Nom / Prénom avec le style existant
-                for col in colonnes:
-                    for r, val in zip([r_nom, r_pre], [nom, prenom]):
-                        c = ws.cell(r, col, val)
-                        c.font      = Font(name="Segoe UI", size=8)
-                        c.fill      = copy(ws.cell(r_hor + 2, col).fill)
-                        c.alignment = Alignment(horizontal="center")
-                        
+                nom_prenom_parts = identite.strip().split()
+                if len(nom_prenom_parts) >= 2:
+                    nom = nom_prenom_parts[0].strip()
+                    prenom = " ".join(nom_prenom_parts[1:]).strip()
+                    ws.cell(r_hor, 1, f"{nom}\n{prenom}").alignment = Alignment(wrap_text=True)
+                    for col in colonnes:
+                        for r, val in zip([r_nom, r_pre], [nom, prenom]):
+                            c = ws.cell(r, col, val)
+                            c.font = Font(name="Segoe UI", size=8)
+                            c.fill = copy(ws.cell(r_hor + 2, col).fill)
+                            c.alignment = Alignment(horizontal="center")
+
             elif is_rempla:
                 for col in colonnes:
                     d = convertir(ws.cell(1, col).value)
