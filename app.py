@@ -46,6 +46,19 @@ def save_uploaded_file(uploaded_file, suffix):
     with open(file_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
     return file_path
+# ─────────────────────────────────────────────────────────────
+# Helpers (à placer après les imports, avant les fonctions Streamlit)
+# ─────────────────────────────────────────────────────────────
+def nettoyer_nom_ligne4(ws, col_debut=4, col_fin=34):
+    """
+    Efface 'Nom/' (insensible à la casse/espaces) sur la ligne 4, 
+    colonnes D→AH incluses.
+    """
+    for col in range(col_debut, col_fin + 1):      # 4 = D, 34 = AH
+        cell = ws.cell(row=4, column=col)
+        if isinstance(cell.value, str) and cell.value.strip().lower() == "nom/":
+            cell.value = None
+# ─────────────────────────────────────────────────────────────
 
 def traitement_partie1(fichier_initial):
     fichier_csv = "fichier_intermediaire.csv"
@@ -90,34 +103,100 @@ def traitement_partie1(fichier_initial):
     ws_nouveau = wb_nouveau.active
     ligne_nouvelle = 1
 
+    # liste des en-têtes à ignorer
+    headers_to_skip = ["Nom/", "Prénom"]
+
+
+
+
     for row in ws.iter_rows():
         val = row[0].value
-        if isinstance(val, str) and re.match(r"\d{2}/\d{2}/\d{4}", val.strip()):
-            continue
+        # on ne traite que si c'est une chaîne
+        if isinstance(val, str):
+            v = val.strip().lower()
+            # si c'est une date OU un header, on passe à la ligne suivante
+            if re.match(r"\d{2}/\d{2}/\d{4}", v) or v in headers_to_skip:
+                continue
+
+        # ──> ce bloc DOIT être dans la même boucle for row, pas décalé !
         for col_index, cell in enumerate(row, start=1):
-            nc = ws_nouveau.cell(row=ligne_nouvelle, column=col_index, value=cell.value)
+            nc = ws_nouveau.cell(
+                row=ligne_nouvelle,
+                column=col_index,
+                value=cell.value
+            )
             if cell.has_style:
-                nc.font = copy(cell.font)
-                nc.border = copy(cell.border)
-                nc.fill = copy(cell.fill)
+                nc.font          = copy(cell.font)
+                nc.border        = copy(cell.border)
+                nc.fill          = copy(cell.fill)
                 nc.number_format = copy(cell.number_format)
-                nc.protection = copy(cell.protection)
-                nc.alignment = copy(cell.alignment)
+                nc.protection    = copy(cell.protection)
+                nc.alignment     = copy(cell.alignment)
+
         ligne_nouvelle += 1
+#
+    #for row in ws.iter_rows():
+        #val = row[0].value
+        #if isinstance(val, str) and re.match(r"\d{2}/\d{2}/\d{4}", val.strip()):
+        
+            #continue
+       # for col_index, cell in enumerate(row, start=1):
+       #     nc = ws_nouveau.cell(row=ligne_nouvelle, column=col_index, value=cell.value)
+       #     if cell.has_style:
+       #         nc.font = copy(cell.font)
+       #         nc.border = copy(cell.border)
+       #         nc.fill = copy(cell.fill)
+       #         nc.number_format = copy(cell.number_format)
+       #         nc.protection = copy(cell.protection)
+       #         nc.alignment = copy(cell.alignment)
+       # ligne_nouvelle += 1
 
     wb_nouveau.save(fichier_nettoye)
     wb = load_workbook(fichier_nettoye)
     ws = wb.active
-    lignes_act_jour = [r for r in range(1, ws.max_row + 1) if ws.cell(r, 3).value == "Act. jour"]
+# 🔹 1) Nettoyage ciblé ligne 4 (D→AH)
+    nettoyer_nom_ligne4(ws)
+
+    # 🔹 2) Repérage des blocs "Act. jour"
+    lignes_act_jour = [
+        r for r in range(1, ws.max_row + 1)
+        if isinstance(ws.cell(r, 3).value, str)
+           and ws.cell(r, 3).value.strip().lower() == "act. jour"
+    ]
+
+    # 🔹 3) Suppression des 'Nom/' résiduels sur ces lignes
+    for r in lignes_act_jour:
+        for c in range(1, ws.max_column + 1):
+            val = ws.cell(row=r, column=c).value
+            if isinstance(val, str) and val.strip().lower() == "nom/":
+                ws.cell(row=r, column=c).value = None
+
+    # 🔹 4) Insertion des lignes Nom / Prénom
     decalage = 0
     for ligne in lignes_act_jour:
         i = ligne + 1 + decalage
         ws.insert_rows(i, amount=2)
-        ws.cell(row=i, column=3, value="Nom").font = Font(name="Segoe UI", size=14)
+        ws.cell(row=i,   column=3, value="Nom").font    = Font(name="Segoe UI", size=14)
         ws.cell(row=i+1, column=3, value="Prénom").font = Font(name="Segoe UI", size=14)
         decalage += 2
 
+    # (🔥 SUPPRIMÉ) la boucle dupliquée qui refaisait le même nettoyage
+
+    # ⚠️ N’oublie pas : on travaille maintenant sur `wb`
     wb.save(fichier_nom_prenom)
+
+
+
+    #lignes_act_jour = [r for r in range(1, ws.max_row + 1) if ws.cell(r, 3).value == "Act. jour"]
+    #decalage = 0
+    #for ligne in lignes_act_jour:
+    #    i = ligne + 1 + decalage
+    #    ws.insert_rows(i, amount=2)
+    #    ws.cell(row=i, column=3, value="Nom").font = Font(name="Segoe UI", size=14)
+    #    ws.cell(row=i+1, column=3, value="Prénom").font = Font(name="Segoe UI", size=14)
+    #    decalage += 2
+#
+    #wb.save(fichier_nom_prenom)
     df_rempla = pd.read_csv(fichier_csv)
     wb = load_workbook(fichier_nom_prenom)
     ws = wb.active
@@ -195,7 +274,7 @@ def traitement_partie1(fichier_initial):
                         c.font      = Font(name="Segoe UI", size=8)
                         c.fill      = copy(ws.cell(r_hor + 2, col).fill)
                         c.alignment = Alignment(horizontal="center")
-                        
+
             elif is_rempla:
                 for col in colonnes:
                     d = convertir(ws.cell(1, col).value)
@@ -247,8 +326,11 @@ def traitement_partie1(fichier_initial):
                 cell = ws_new.cell(row=row, column=col)
                 cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
 
-        # Ajuster la largeur de la colonne A
+    # Ajuster la largeur de la colonne A
     ws_new.column_dimensions["A"].width = 50
+
+    # ✅ Nettoyage final : 'Nom/' en D4:AH4 avant export
+    nettoyer_nom_ligne4(ws_new)
 
     wb_new.save(fichier_final)
     return fichier_final
